@@ -1,0 +1,116 @@
+.special-area {
+  position: absolute;
+  background: white;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  cursor: move;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.special-area.dragging {
+  z-index: 1000;
+  cursor: grabbing;
+  opacity: 0.8;
+}
+
+.special-area:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.area-controls {
+  position: absolute;
+  top: -30px;
+  right: 10px;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.special-area:hover .area-controls {
+  opacity: 1;
+}
+
+.area-control-btn {
+  padding: 0.25rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.area-control-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.area-control-btn.delete:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.area-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  user-select: none;
+}
+
+.area-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.area-resize-handle.br {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  right: -6px;
+  bottom: -6px;
+  background: #667eea;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.special-area.danceFloor {
+  background: linear-gradient(45deg, #fef3c7 25%, #fde68a 25%, #fde68a 50%, #fef3c7 50%, #fef3c7 75%, #fde68a 75%, #fde68a);
+  background-size: 20px 20px;
+  border-color: #f59e0b;
+}
+
+.special-area.danceFloor .area-content {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.special-area.bar {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #3b82f6;
+}
+
+.special-area.lounge {
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+  border-color: #ec4899;
+}
+
+.special-area.dj {
+  background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+  border-color: #a855f7;
+}

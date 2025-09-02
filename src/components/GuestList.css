@@ -1,0 +1,128 @@
+.guest-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-top: 1px solid #e5e7eb;
+}
+
+.guest-list-header {
+  padding: 1rem;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.guest-list-header h3 {
+  flex: 1;
+  font-size: 1rem;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.guest-count {
+  font-size: 0.85rem;
+  color: #6b7280;
+  background: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+}
+
+.guest-list-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.guest-section {
+  margin-bottom: 1.5rem;
+}
+
+.guest-section h4 {
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.guest-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.guest-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: grab;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.guest-item:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.guest-item.dragging {
+  cursor: grabbing;
+}
+
+.guest-item.seated {
+  background: #f9fafb;
+  cursor: default;
+  opacity: 0.7;
+}
+
+.guest-item.seated:hover {
+  border-color: #e5e7eb;
+  box-shadow: none;
+}
+
+.guest-item span {
+  flex: 1;
+  color: #1f2937;
+}
+
+.seated-badge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  background: #10b981;
+  color: white;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.seated-section {
+  opacity: 0.6;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.empty-state p {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.empty-state .hint {
+  font-size: 0.85rem;
+  color: #d1d5db;
+}

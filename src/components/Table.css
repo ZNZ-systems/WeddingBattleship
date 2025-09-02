@@ -1,0 +1,89 @@
+.table-container {
+  position: absolute;
+  cursor: move;
+  transition: opacity 0.2s;
+}
+
+.table-container.dragging {
+  z-index: 1000;
+  cursor: grabbing;
+}
+
+.table-controls {
+  position: absolute;
+  top: -30px;
+  right: 50%;
+  transform: translateX(50%);
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.table-container:hover .table-controls {
+  opacity: 1;
+}
+
+.table-control-btn {
+  padding: 0.25rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-control-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.table-control-btn.delete:hover {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.table {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.table-container:hover .table {
+  border-color: #667eea;
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.15);
+}
+
+.table-number {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4b5563;
+  text-align: center;
+}
+
+.table.circle { border-radius: 50%; }
+.table.square { border-radius: 12px; }
+.table.rectangle { border-radius: 12px; }
+
+.resize-handle.br {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  right: -6px;
+  bottom: -6px;
+  background: #667eea;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: nwse-resize;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import './App.css';
@@ -6,6 +6,7 @@ import GuestList from './components/GuestList';
 import SeatingChart from './components/SeatingChart';
 import Controls from './components/Controls';
 import ImportModal from './components/ImportModal';
+import { getSupabaseClient } from './lib/supabase';
 
 function App() {
   const [guests, setGuests] = useState([]);
@@ -14,6 +15,28 @@ function App() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
   const [lockedChairs, setLockedChairs] = useState(new Set());
+
+  // Supabase persistence setup
+  const [editorToken] = useState(() => {
+    try {
+      const existing = localStorage.getItem('wb-editor-token');
+      if (existing) return existing;
+      const generated = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+      localStorage.setItem('wb-editor-token', generated);
+      return generated;
+    } catch (e) {
+      return Math.random().toString(36).slice(2);
+    }
+  });
+  const supabase = useMemo(() => getSupabaseClient(editorToken), [editorToken]);
+  const slug = useMemo(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('plan') || 'default';
+    } catch (e) {
+      return 'default';
+    }
+  }, []);
 
   const handleImportGuests = useCallback((importedGuests) => {
     setGuests(importedGuests);
@@ -136,6 +159,52 @@ function App() {
       area.id === areaId ? { ...area, width, height } : area
     ));
   }, []);
+
+  // Load plan on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('plans')
+          .select('data')
+          .eq('slug', slug)
+          .maybeSingle();
+        if (error || !data || !data.data || cancelled) return;
+        const s = data.data;
+        setGuests(Array.isArray(s.guests) ? s.guests : []);
+        setTables(Array.isArray(s.tables) ? s.tables : []);
+        setSpecialAreas(Array.isArray(s.specialAreas) ? s.specialAreas : []);
+        setLockedChairs(new Set(Array.isArray(s.lockedChairs) ? s.lockedChairs : []));
+      } catch (e) {
+        // ignore load errors in UI
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [supabase, slug]);
+
+  // Autosave plan on changes (debounced)
+  useEffect(() => {
+    const timeout = setTimeout(async () => {
+      try {
+        await supabase
+          .from('plans')
+          .upsert({
+            slug,
+            editor_token: editorToken,
+            data: {
+              guests,
+              tables,
+              specialAreas,
+              lockedChairs: Array.from(lockedChairs)
+            }
+          }, { onConflict: 'slug' });
+      } catch (e) {
+        // ignore save errors in UI
+      }
+    }, 600);
+    return () => clearTimeout(timeout);
+  }, [guests, tables, specialAreas, lockedChairs, supabase, slug, editorToken]);
 
   return (
     <DndProvider backend={HTML5Backend}>

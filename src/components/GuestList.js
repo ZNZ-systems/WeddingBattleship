@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useDrag } from 'react-dnd';
-import { Users, User } from 'lucide-react';
+import { Users, User, Search } from 'lucide-react';
 import './GuestList.css';
 
 function GuestItem({ guest }) {
@@ -27,8 +27,18 @@ function GuestItem({ guest }) {
 }
 
 function GuestList({ guests }) {
-  const unseatedGuests = guests.filter(g => !g.seated);
-  const seatedGuests = guests.filter(g => g.seated);
+  const [query, setQuery] = useState('');
+
+  const { unseatedGuests, seatedGuests } = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = q.length
+      ? guests.filter(g => (g.fullName || '').toLowerCase().includes(q))
+      : guests;
+    return {
+      unseatedGuests: filtered.filter(g => !g.seated),
+      seatedGuests: filtered.filter(g => g.seated),
+    };
+  }, [guests, query]);
 
   return (
     <div className="guest-list">
@@ -38,6 +48,19 @@ function GuestList({ guests }) {
         <span className="guest-count">
           {unseatedGuests.length} / {guests.length} unseated
         </span>
+      </div>
+
+      <div className="guest-list-search">
+        <div className="search-input">
+          <Search size={16} />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search guests by name..."
+            aria-label="Search guests"
+          />
+        </div>
       </div>
       
       <div className="guest-list-content">

@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
+import { useDrag } from 'react-dnd';
 import { Music, Coffee, Users, Mic2, Trash2 } from 'lucide-react';
 import './SpecialArea.css';
 
-function SpecialArea({ area, onMove, onDelete, onResize }) {
-  const [isDragging, setIsDragging] = useState(false);
+function SpecialArea({ area, onDelete, onResize }) {
+  const [isResizing, setIsResizing] = useState(false);
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: 'area',
+    item: { id: area.id },
+    canDrag: () => !isResizing,
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  }), [area.id, isResizing]);
 
   const icons = {
     danceFloor: Music,
@@ -22,28 +31,10 @@ function SpecialArea({ area, onMove, onDelete, onResize }) {
   const Icon = icons[area.type] || Music;
   const label = labels[area.type] || 'Area';
 
-  const handleMouseDown = (e) => {
-    if (e.target.closest('.area-controls')) return;
-    setIsDragging(true);
-    const startX = e.clientX - area.x;
-    const startY = e.clientY - area.y;
-
-    const handleMouseMove = (e) => {
-      onMove(e.clientX - startX, e.clientY - startY);
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
   const startResize = (e) => {
     e.stopPropagation();
+    e.preventDefault();
+    setIsResizing(true);
     const startX = e.clientX;
     const startY = e.clientY;
     const startW = area.width;
@@ -56,6 +47,7 @@ function SpecialArea({ area, onMove, onDelete, onResize }) {
     const onStop = () => {
       document.removeEventListener('mousemove', onMoveResize);
       document.removeEventListener('mouseup', onStop);
+      setIsResizing(false);
     };
     document.addEventListener('mousemove', onMoveResize);
     document.addEventListener('mouseup', onStop);
@@ -70,7 +62,7 @@ function SpecialArea({ area, onMove, onDelete, onResize }) {
         width: area.width,
         height: area.height,
       }}
-      onMouseDown={handleMouseDown}
+      ref={drag}
     >
       <div className="area-controls">
         <button

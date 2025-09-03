@@ -6,6 +6,7 @@ import GuestList from './components/GuestList';
 import SeatingChart from './components/SeatingChart';
 import Controls from './components/Controls';
 import ImportModal from './components/ImportModal';
+import Splitter from './components/Splitter';
 import { getSupabaseClient } from './lib/supabase';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [selectedTable, setSelectedTable] = useState(null);
   const [lockedChairs, setLockedChairs] = useState(new Set());
+  const [controlsHeight, setControlsHeight] = useState(300); // Default height for Controls
 
   // Supabase persistence setup
   const [editorToken] = useState(() => {
@@ -44,17 +46,19 @@ function App() {
   }, []);
 
   const handleAddTable = useCallback(({ seats, name, shape }) => {
+    console.log('Adding table with:', { seats, name, shape });
     const parsedSeats = parseInt(seats);
     const newTable = {
       id: `table-${Date.now()}`,
       name: name && name.length > 0 ? name : `Table ${tables.length + 1}`,
-      shape: shape || 'circle',
+      shape: shape || 'square',
       seats: parsedSeats,
       x: 100,
       y: 100,
       radius: 50 + (parsedSeats * 2),
       width: 160,
       height: 100,
+      rotation: 0,
       guests: new Array(parsedSeats).fill(null)
     };
     setTables([...tables, newTable]);
@@ -88,33 +92,38 @@ function App() {
     const chairId = `${tableId}-${seatIndex}`;
     if (lockedChairs.has(chairId)) return;
 
-    setTables(tables => tables.map(table => {
-      if (table.id === tableId) {
-        const newGuests = [...table.guests];
-        const currentGuest = newGuests[seatIndex];
-        
-        if (currentGuest && guestId) {
-          setGuests(guests => guests.map(g => 
-            g.id === currentGuest ? { ...g, seated: false } : g
-          ));
-        }
-        
-        newGuests[seatIndex] = guestId;
-        
+    setTables(prevTables => {
+      const targetTable = prevTables.find(t => t.id === tableId);
+      const previousOccupant = targetTable ? targetTable.guests[seatIndex] : null;
+
+      const updatedTables = prevTables.map(table => {
+        let updatedGuests = [...table.guests];
+
+        // If moving a guest, remove them from any other chair across all tables
         if (guestId) {
-          setGuests(guests => guests.map(g => 
-            g.id === guestId ? { ...g, seated: true } : g
-          ));
-        } else if (currentGuest) {
-          setGuests(guests => guests.map(g => 
-            g.id === currentGuest ? { ...g, seated: false } : g
-          ));
+          updatedGuests = updatedGuests.map(id => (id === guestId ? null : id));
         }
-        
-        return { ...table, guests: newGuests };
+
+        // Set the target seat on the target table
+        if (table.id === tableId) {
+          updatedGuests[seatIndex] = guestId;
+        }
+
+        return { ...table, guests: updatedGuests };
+      });
+
+      // Update seated flags
+      if (guestId) {
+        setGuests(gs => gs.map(g => (g.id === guestId ? { ...g, seated: true } : g)));
       }
-      return table;
-    }));
+      if (!guestId && previousOccupant) {
+        setGuests(gs => gs.map(g => (g.id === previousOccupant ? { ...g, seated: false } : g)));
+      } else if (guestId && previousOccupant && previousOccupant !== guestId) {
+        setGuests(gs => gs.map(g => (g.id === previousOccupant ? { ...g, seated: false } : g)));
+      }
+
+      return updatedTables;
+    });
   }, [lockedChairs]);
 
   const handleToggleLockChair = useCallback((tableId, seatIndex) => {
@@ -148,9 +157,15 @@ function App() {
     setSpecialAreas(areas => areas.filter(a => a.id !== areaId));
   }, []);
 
-  const handleResizeTable = useCallback((tableId, updates) => {
-    setTables(tables => tables.map(table =>
+    const handleResizeTable = useCallback((tableId, updates) => {
+    setTables(tables => tables.map(table => 
       table.id === tableId ? { ...table, ...updates } : table
+    ));
+  }, []);
+
+  const handleRotateTable = useCallback((tableId, rotation) => {
+    setTables(tables => tables.map(table => 
+      table.id === tableId ? { ...table, rotation } : table
     ));
   }, []);
 
@@ -158,6 +173,10 @@ function App() {
     setSpecialAreas(areas => areas.map(area =>
       area.id === areaId ? { ...area, width, height } : area
     ));
+  }, []);
+
+  const handleResizeControls = useCallback((newHeight) => {
+    setControlsHeight(newHeight);
   }, []);
 
   // Load plan on mount
@@ -219,7 +238,9 @@ function App() {
               onAddTable={handleAddTable}
               onAddSpecialArea={handleAddSpecialArea}
               onImportGuests={() => setShowImportModal(true)}
+              height={controlsHeight}
             />
+            <Splitter onResize={handleResizeControls} minHeight={200} maxHeight={600} />
             <GuestList 
               guests={guests}
               onSeatGuest={handleSeatGuest}
@@ -239,6 +260,7 @@ function App() {
               onDeleteArea={handleDeleteArea}
               onResizeTable={handleResizeTable}
               onResizeArea={handleResizeArea}
+              onRotateTable={handleRotateTable}
             />
           </div>
         </div>

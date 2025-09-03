@@ -1,0 +1,50 @@
+.splitter {
+  height: 8px;
+  background: #f3f4f6;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.splitter:hover {
+  background: #e5e7eb;
+}
+
+.splitter.dragging {
+  background: #d1d5db;
+  cursor: ns-resize;
+}
+
+.splitter-handle {
+  width: 40px;
+  height: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splitter-dots {
+  display: flex;
+  gap: 2px;
+}
+
+.dot {
+  width: 3px;
+  height: 3px;
+  background: #9ca3af;
+  border-radius: 50%;
+}
+
+.splitter:hover .dot {
+  background: #6b7280;
+}
+
+.splitter.dragging .dot {
+  background: #4b5563;
+}

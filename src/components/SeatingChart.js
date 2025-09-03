@@ -156,11 +156,19 @@ function SeatingChart({
     accept: ['table', 'area'],
     drop: (item, monitor) => {
       if (!canvasRef.current) return;
-      const sourceOffset = monitor.getSourceClientOffset();
-      if (!sourceOffset) return;
+
+      const clientOffset = monitor.getClientOffset();
+      const initialClientOffset = monitor.getInitialClientOffset();
+      const initialSourceOffset = monitor.getInitialSourceClientOffset();
+      if (!clientOffset || !initialClientOffset || !initialSourceOffset) return;
+
+      // Preserve the grab position by subtracting the initial pointer-to-source offset
+      const offsetX = initialClientOffset.x - initialSourceOffset.x;
+      const offsetY = initialClientOffset.y - initialSourceOffset.y;
+
       const canvasRect = canvasRef.current.getBoundingClientRect();
-      const x = (sourceOffset.x - canvasRect.left + panOffset.x) / zoom;
-      const y = (sourceOffset.y - canvasRect.top + panOffset.y) / zoom;
+      const x = (clientOffset.x - offsetX - canvasRect.left + panOffset.x) / zoom;
+      const y = (clientOffset.y - offsetY - canvasRect.top + panOffset.y) / zoom;
       const type = monitor.getItemType();
       onMoveItem(item.id, x, y, type);
     }

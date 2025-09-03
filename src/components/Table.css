@@ -87,8 +87,9 @@
 }
 
 .table.circle { border-radius: 50%; }
-.table.square { border-radius: 12px; }
+.table.square { border-radius: 8px; }
 .table.rectangle { border-radius: 12px; }
+.table.imperial { border-radius: 12px; }
 
 .resize-handle.br {
   position: absolute;

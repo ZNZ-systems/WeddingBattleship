@@ -42,6 +42,7 @@ function Table({ table, onSeatGuest, onToggleLockChair, lockedChairs, getGuestNa
     let width = table.width || defaultSide;
     let height = table.height || defaultSide;
     const isSquare = table.shape === 'square';
+    const isImperial = table.shape === 'imperial';
     if (isSquare) { const side = Math.max(width, height, 100); width = side; height = side; }
     const halfW = width / 2;
     const halfH = height / 2;
@@ -80,6 +81,54 @@ function Table({ table, onSeatGuest, onToggleLockChair, lockedChairs, getGuestNa
       if (counts[3] > 0) {
         const step = height / (counts[3] + 1);
         for (let i = 1; i <= counts[3]; i++) addPoint(-halfW - offset, -halfH + step * i, Math.PI);
+      }
+    } else if (isImperial) {
+      if (isVertical) {
+        // Top and bottom anchors (2 each)
+        if (seats >= 1) addPoint(-width / 4, -halfH - offset, -Math.PI / 2);
+        if (seats >= 2) addPoint(width / 4, -halfH - offset, -Math.PI / 2);
+        if (seats >= 3) addPoint(-width / 4, halfH + offset, Math.PI / 2);
+        if (seats >= 4) addPoint(width / 4, halfH + offset, Math.PI / 2);
+        const remaining = Math.max(0, seats - Math.min(seats, 4));
+        const leftCount = Math.ceil(remaining / 2);
+        const rightCount = Math.floor(remaining / 2);
+        if (leftCount > 0) {
+          const step = height / (leftCount + 1);
+          for (let i = 1; i <= leftCount; i++) {
+            const y = -halfH + step * i;
+            addPoint(-halfW - offset, y, Math.PI);
+          }
+        }
+        if (rightCount > 0) {
+          const step = height / (rightCount + 1);
+          for (let i = 1; i <= rightCount; i++) {
+            const y = -halfH + step * i;
+            addPoint(halfW + offset, y, 0);
+          }
+        }
+      } else {
+        // Left and right anchors (2 each)
+        if (seats >= 1) addPoint(-halfW - offset, -height / 4, Math.PI);
+        if (seats >= 2) addPoint(-halfW - offset, height / 4, Math.PI);
+        if (seats >= 3) addPoint(halfW + offset, -height / 4, 0);
+        if (seats >= 4) addPoint(halfW + offset, height / 4, 0);
+        const remaining = Math.max(0, seats - Math.min(seats, 4));
+        const topCount = Math.ceil(remaining / 2);
+        const bottomCount = Math.floor(remaining / 2);
+        if (topCount > 0) {
+          const step = width / (topCount + 1);
+          for (let i = 1; i <= topCount; i++) {
+            const x = -halfW + step * i;
+            addPoint(x, -halfH - offset, -Math.PI / 2);
+          }
+        }
+        if (bottomCount > 0) {
+          const step = width / (bottomCount + 1);
+          for (let i = 1; i <= bottomCount; i++) {
+            const x = -halfW + step * i;
+            addPoint(x, halfH + offset, Math.PI / 2);
+          }
+        }
       }
     } else if (isVertical) {
       // Top and bottom anchors
@@ -207,7 +256,7 @@ function Table({ table, onSeatGuest, onToggleLockChair, lockedChairs, getGuestNa
           </button>
         </div>
         
-        {(table.shape === 'rectangle' || table.shape === 'square') && (
+        {(table.shape === 'rectangle' || table.shape === 'square' || table.shape === 'imperial') && (
           <div className="resize-handle br" onMouseDown={startResize} />
         )}
       </div>

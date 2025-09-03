@@ -74,6 +74,7 @@ function Controls({ onAddTable, onAddSpecialArea, onImportGuests, height = 300 }
                   <option value="circle">Circle</option>
                   <option value="square">Square</option>
                   <option value="rectangle">Rectangle</option>
+                  <option value="imperial">Imperial</option>
                 </select>
               </label>
               <label>

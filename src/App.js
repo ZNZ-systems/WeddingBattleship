@@ -8,15 +8,33 @@ import Controls from './components/Controls';
 import ImportModal from './components/ImportModal';
 import Splitter from './components/Splitter';
 import { getSupabaseClient } from './lib/supabase';
+import { usePlanManager } from './hooks/usePlanManager';
 
 function App() {
-  const [guests, setGuests] = useState([]);
-  const [tables, setTables] = useState([]);
-  const [specialAreas, setSpecialAreas] = useState([]);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [selectedTable, setSelectedTable] = useState(null);
-  const [lockedChairs, setLockedChairs] = useState(new Set());
   const [controlsHeight, setControlsHeight] = useState(300); // Default height for Controls
+
+  const {
+    plan,
+    importGuests,
+    addTable,
+    addSpecialArea,
+    moveItem,
+    seatGuest,
+    toggleLockChair,
+    deleteTable,
+    deleteArea,
+    resizeTable,
+    rotateTable,
+    resizeArea,
+    loadPlan,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = usePlanManager();
+
+  const { guests, tables, specialAreas, lockedChairs } = plan;
 
   // Supabase persistence setup
   const [editorToken] = useState(() => {
@@ -41,139 +59,49 @@ function App() {
   }, []);
 
   const handleImportGuests = useCallback((importedGuests) => {
-    setGuests(importedGuests);
+    importGuests(importedGuests);
     setShowImportModal(false);
-  }, []);
+  }, [importGuests]);
 
   const handleAddTable = useCallback(({ seats, name, shape }) => {
-    console.log('Adding table with:', { seats, name, shape });
-    const parsedSeats = parseInt(seats);
-    const newTable = {
-      id: `table-${Date.now()}`,
-      name: name && name.length > 0 ? name : `Table ${tables.length + 1}`,
-      shape: shape || 'square',
-      seats: parsedSeats,
-      x: 100,
-      y: 100,
-      radius: 50 + (parsedSeats * 2),
-      width: 160,
-      height: 100,
-      rotation: 0,
-      guests: new Array(parsedSeats).fill(null)
-    };
-    setTables([...tables, newTable]);
-  }, [tables]);
+    addTable({ seats, name, shape });
+  }, [addTable]);
 
   const handleAddSpecialArea = useCallback((type) => {
-    const newArea = {
-      id: `area-${Date.now()}`,
-      type,
-      x: 200,
-      y: 200,
-      width: 150,
-      height: 100
-    };
-    setSpecialAreas([...specialAreas, newArea]);
-  }, [specialAreas]);
+    addSpecialArea(type);
+  }, [addSpecialArea]);
 
   const handleMoveItem = useCallback((id, x, y, type) => {
-    if (type === 'table') {
-      setTables(tables => tables.map(table => 
-        table.id === id ? { ...table, x, y } : table
-      ));
-    } else if (type === 'area') {
-      setSpecialAreas(areas => areas.map(area => 
-        area.id === id ? { ...area, x, y } : area
-      ));
-    }
-  }, []);
+    moveItem(id, x, y, type);
+  }, [moveItem]);
 
   const handleSeatGuest = useCallback((tableId, seatIndex, guestId) => {
-    const chairId = `${tableId}-${seatIndex}`;
-    if (lockedChairs.has(chairId)) return;
-
-    setTables(prevTables => {
-      const targetTable = prevTables.find(t => t.id === tableId);
-      const previousOccupant = targetTable ? targetTable.guests[seatIndex] : null;
-
-      const updatedTables = prevTables.map(table => {
-        let updatedGuests = [...table.guests];
-
-        // If moving a guest, remove them from any other chair across all tables
-        if (guestId) {
-          updatedGuests = updatedGuests.map(id => (id === guestId ? null : id));
-        }
-
-        // Set the target seat on the target table
-        if (table.id === tableId) {
-          updatedGuests[seatIndex] = guestId;
-        }
-
-        return { ...table, guests: updatedGuests };
-      });
-
-      // Update seated flags
-      if (guestId) {
-        setGuests(gs => gs.map(g => (g.id === guestId ? { ...g, seated: true } : g)));
-      }
-      if (!guestId && previousOccupant) {
-        setGuests(gs => gs.map(g => (g.id === previousOccupant ? { ...g, seated: false } : g)));
-      } else if (guestId && previousOccupant && previousOccupant !== guestId) {
-        setGuests(gs => gs.map(g => (g.id === previousOccupant ? { ...g, seated: false } : g)));
-      }
-
-      return updatedTables;
-    });
-  }, [lockedChairs]);
+    seatGuest(tableId, seatIndex, guestId);
+  }, [seatGuest]);
 
   const handleToggleLockChair = useCallback((tableId, seatIndex) => {
-    const chairId = `${tableId}-${seatIndex}`;
-    setLockedChairs(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(chairId)) {
-        newSet.delete(chairId);
-      } else {
-        newSet.add(chairId);
-      }
-      return newSet;
-    });
-  }, []);
+    toggleLockChair(tableId, seatIndex);
+  }, [toggleLockChair]);
 
   const handleDeleteTable = useCallback((tableId) => {
-    const table = tables.find(t => t.id === tableId);
-    if (table) {
-      table.guests.forEach(guestId => {
-        if (guestId) {
-          setGuests(guests => guests.map(g => 
-            g.id === guestId ? { ...g, seated: false } : g
-          ));
-        }
-      });
-    }
-    setTables(tables => tables.filter(t => t.id !== tableId));
-  }, [tables]);
+    deleteTable(tableId);
+  }, [deleteTable]);
 
   const handleDeleteArea = useCallback((areaId) => {
-    setSpecialAreas(areas => areas.filter(a => a.id !== areaId));
-  }, []);
+    deleteArea(areaId);
+  }, [deleteArea]);
 
-    const handleResizeTable = useCallback((tableId, updates) => {
-    setTables(tables => tables.map(table => 
-      table.id === tableId ? { ...table, ...updates } : table
-    ));
-  }, []);
+  const handleResizeTable = useCallback((tableId, updates) => {
+    resizeTable(tableId, updates);
+  }, [resizeTable]);
 
   const handleRotateTable = useCallback((tableId, rotation) => {
-    setTables(tables => tables.map(table => 
-      table.id === tableId ? { ...table, rotation } : table
-    ));
-  }, []);
+    rotateTable(tableId, rotation);
+  }, [rotateTable]);
 
   const handleResizeArea = useCallback((areaId, width, height) => {
-    setSpecialAreas(areas => areas.map(area =>
-      area.id === areaId ? { ...area, width, height } : area
-    ));
-  }, []);
+    resizeArea(areaId, width, height);
+  }, [resizeArea]);
 
   const handleResizeControls = useCallback((newHeight) => {
     setControlsHeight(newHeight);
@@ -190,17 +118,13 @@ function App() {
           .eq('slug', slug)
           .maybeSingle();
         if (error || !data || !data.data || cancelled) return;
-        const s = data.data;
-        setGuests(Array.isArray(s.guests) ? s.guests : []);
-        setTables(Array.isArray(s.tables) ? s.tables : []);
-        setSpecialAreas(Array.isArray(s.specialAreas) ? s.specialAreas : []);
-        setLockedChairs(new Set(Array.isArray(s.lockedChairs) ? s.lockedChairs : []));
+        loadPlan(data.data);
       } catch (e) {
         // ignore load errors in UI
       }
     })();
     return () => { cancelled = true; };
-  }, [supabase, slug]);
+  }, [supabase, slug, loadPlan]);
 
   // Autosave plan on changes (debounced)
   useEffect(() => {
@@ -234,16 +158,19 @@ function App() {
         
         <div className="app-container">
           <div className="sidebar">
-            <Controls 
+            <Controls
               onAddTable={handleAddTable}
               onAddSpecialArea={handleAddSpecialArea}
               onImportGuests={() => setShowImportModal(true)}
               height={controlsHeight}
+              onUndo={undo}
+              onRedo={redo}
+              canUndo={canUndo}
+              canRedo={canRedo}
             />
             <Splitter onResize={handleResizeControls} minHeight={200} maxHeight={600} />
-            <GuestList 
+            <GuestList
               guests={guests}
-              onSeatGuest={handleSeatGuest}
             />
           </div>
           

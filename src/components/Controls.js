@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
-import { Plus, Upload, Square, Music, Coffee, Users, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Upload, Music, Coffee, Users, ChevronDown, ChevronRight, RotateCcw, RotateCw } from 'lucide-react';
 import './Controls.css';
 
-function Controls({ onAddTable, onAddSpecialArea, onImportGuests, height = 300 }) {
+function Controls({ onAddTable, onAddSpecialArea, onImportGuests, height = 300, onUndo, onRedo, canUndo, canRedo }) {
   const [tableSeats, setTableSeats] = useState(8);
   const [tableName, setTableName] = useState('');
   const [tableShape, setTableShape] = useState('square');
-  
+
   // Collapsible state
   const [collapsedSections, setCollapsedSections] = useState({
     import: false,
     addTable: false,
     specialAreas: false
   });
+
+  const undoDisabled = !canUndo || typeof onUndo !== 'function';
+  const redoDisabled = !canRedo || typeof onRedo !== 'function';
 
   const specialAreas = [
     { type: 'danceFloor', icon: Music, label: 'Dance Floor' },
@@ -30,8 +33,39 @@ function Controls({ onAddTable, onAddSpecialArea, onImportGuests, height = 300 }
 
   return (
     <div className="controls" style={{ height: `${height}px` }}>
+      <div className="control-section history-section">
+        <div className="section-header static">
+          <h3>Plan History</h3>
+        </div>
+        <div className="section-content history-content">
+          <div className="history-actions">
+            <button
+              className="control-btn history-btn"
+              onClick={() => { if (!undoDisabled) onUndo(); }}
+              disabled={undoDisabled}
+              type="button"
+            >
+              <RotateCcw size={16} />
+              Undo
+            </button>
+            <button
+              className="control-btn history-btn"
+              onClick={() => { if (!redoDisabled) onRedo(); }}
+              disabled={redoDisabled}
+              type="button"
+            >
+              <RotateCw size={16} />
+              Redo
+            </button>
+          </div>
+          <p className="history-hint">
+            Explore alternate seating ideas with undo and redo controls.
+          </p>
+        </div>
+      </div>
+
       <div className="control-section">
-        <div 
+        <div
           className="section-header collapsible"
           onClick={() => toggleSection('import')}
         >

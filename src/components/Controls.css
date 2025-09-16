@@ -49,12 +49,30 @@
   transition: all 0.2s;
 }
 
+.section-header.static {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 0;
+}
+
 .section-header.collapsible:hover {
   border-color: #667eea;
   background: #f8fafc;
 }
 
 .section-header.collapsible h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.section-header.static h3 {
   margin: 0;
   font-size: 0.95rem;
   color: #4b5563;
@@ -87,6 +105,12 @@
   font-weight: 500;
 }
 
+.control-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 .control-btn:hover {
   border-color: #667eea;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -101,6 +125,30 @@
 .control-btn.primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.history-section .section-content {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.control-btn.history-btn {
+  justify-content: center;
+}
+
+.history-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.2;
 }
 
 /* Add Table form styles */

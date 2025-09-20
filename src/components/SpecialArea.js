@@ -9,6 +9,10 @@ function SpecialArea({ area, onDelete, onResize }) {
     type: 'area',
     item: { id: area.id },
     canDrag: () => !isResizing,
+    options: {
+      deltaX: 0,
+      deltaY: 0
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -39,18 +43,30 @@ function SpecialArea({ area, onDelete, onResize }) {
     const startY = e.clientY;
     const startW = area.width;
     const startH = area.height;
+
     const onMoveResize = (evt) => {
       const dx = evt.clientX - startX;
       const dy = evt.clientY - startY;
       onResize(startW + dx, startH + dy);
     };
+
     const onStop = () => {
       document.removeEventListener('mousemove', onMoveResize);
       document.removeEventListener('mouseup', onStop);
+      document.removeEventListener('mouseleave', onMouseLeave);
       setIsResizing(false);
     };
+
+    const onMouseLeave = () => {
+      document.removeEventListener('mousemove', onMoveResize);
+      document.removeEventListener('mouseup', onStop);
+      document.removeEventListener('mouseleave', onMouseLeave);
+      setIsResizing(false);
+    };
+
     document.addEventListener('mousemove', onMoveResize);
     document.addEventListener('mouseup', onStop);
+    document.addEventListener('mouseleave', onMouseLeave);
   };
 
   return (
@@ -61,6 +77,7 @@ function SpecialArea({ area, onDelete, onResize }) {
         top: area.y,
         width: area.width,
         height: area.height,
+        opacity: isDragging ? 0.5 : 1,
       }}
       ref={drag}
     >

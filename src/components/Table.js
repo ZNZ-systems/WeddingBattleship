@@ -11,6 +11,10 @@ function Table({ table, onSeatGuest, onToggleLockChair, lockedChairs, getGuestNa
     type: 'table',
     item: { id: table.id },
     canDrag: () => !isResizing,
+    options: {
+      deltaX: 0,
+      deltaY: 0
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),

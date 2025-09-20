@@ -158,17 +158,14 @@ function SeatingChart({
       if (!canvasRef.current) return;
 
       const clientOffset = monitor.getClientOffset();
-      const initialClientOffset = monitor.getInitialClientOffset();
-      const initialSourceOffset = monitor.getInitialSourceClientOffset();
-      if (!clientOffset || !initialClientOffset || !initialSourceOffset) return;
-
-      // Preserve the grab position by subtracting the initial pointer-to-source offset
-      const offsetX = initialClientOffset.x - initialSourceOffset.x;
-      const offsetY = initialClientOffset.y - initialSourceOffset.y;
+      if (!clientOffset) return;
 
       const canvasRect = canvasRef.current.getBoundingClientRect();
-      const x = (clientOffset.x - offsetX - canvasRect.left + panOffset.x) / zoom;
-      const y = (clientOffset.y - offsetY - canvasRect.top + panOffset.y) / zoom;
+      
+      // Simple coordinate transformation: mouse position to virtual canvas coordinates
+      const x = (clientOffset.x - canvasRect.left - panOffset.x) / zoom;
+      const y = (clientOffset.y - canvasRect.top - panOffset.y) / zoom;
+      
       const type = monitor.getItemType();
       onMoveItem(item.id, x, y, type);
     }
